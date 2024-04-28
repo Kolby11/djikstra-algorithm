@@ -1,0 +1,27 @@
+{
+  // Editor
+  "editor.formatOnSave": true,
+  "editor.wordWrap": "on",
+  "editor.tabSize": 2,
+  "editor.detectIndentation": true,
+  "editor.indentSize": "tabSize",
+  "workbench.editor.labelFormat": "short",
+  
+  // Prettier
+  "prettier.printWidth": 120,
+  "prettier.useEditorConfig": true,
+
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.documentSelectors": ["**/*.svelte"],
+  "[svelte]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+}

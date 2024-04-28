@@ -1,0 +1,14 @@
+{
+	"recommendations": [
+		"svelte.svelte-vscode",
+		"ardenivanov.svelte-intellisense",
+		"fivethree.vscode-svelte-snippets",
+		"formulahendry.auto-rename-tag",
+		"steoates.autoimport",
+		"pivaszbs.svelte-autoimport",
+		"oderwat.indent-rainbow",
+		"yzhang.markdown-all-in-one",
+		"bradlc.vscode-tailwindcss",
+		"pkief.material-icon-theme"
+	]
+}
