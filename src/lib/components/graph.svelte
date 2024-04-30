@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte'
+  import GraphVertice from './graphVertice.svelte'
+
   // Set default values for the gaps
   export let xGap = 50 // fixed gap in pixels between vertical lines
   export let yGap = 50 // fixed gap in pixels between horizontal lines
@@ -13,16 +16,45 @@
     end: Coordinate
   }
 
-  let graphSvgElement: SVGElement
+  let graphSvgElement: SVGElement | null = null
+  let graphSvgElementBounds: {
+    start: {
+      x: number
+      y: number
+    }
+    end: {
+      x: number
+      y: number
+    }
+  }
 
   let xLinePositions: LinePosition[] = []
   let yLinePositions: LinePosition[] = []
 
-  let selectedVertice: HTMLButtonElement | null = null
+  let selectedVertice: GraphVertice | null = null
 
-  import { onDestroy, onMount } from 'svelte'
+  function redraw() {
+    calculateSvgElement()
+    drawGraphLines()
+  }
+
+  function calculateSvgElement() {
+    if (!graphSvgElement) return
+    const rect = graphSvgElement.getBoundingClientRect()
+    graphSvgElementBounds = {
+      start: {
+        x: rect.x,
+        y: rect.y,
+      },
+      end: {
+        x: rect.x + rect.width,
+        y: rect.y + rect.height,
+      },
+    }
+  }
 
   function drawGraphLines() {
+    if (!graphSvgElement) return
     const rect = graphSvgElement.getBoundingClientRect()
     if (rect.width === 0 || rect.height === 0) {
       console.error('SVG has no dimensions')
@@ -55,28 +87,21 @@
     }
   }
 
-  function onVerticeClick(event: MouseEvent) {
-    if (selectedVertice) {
-      selectedVertice.classList.remove('bg-red-500')
-      selectedVertice = null
-    }
-    console.log('Vertice selected')
-  }
-
   onMount(() => {
-    drawGraphLines()
-    window.addEventListener('resize', drawGraphLines)
+    if (typeof window === 'undefined') return
+    redraw()
+    window.addEventListener('resize', redraw)
   })
 
   onDestroy(() => {
-    window.removeEventListener('resize', drawGraphLines)
+    if (typeof window === 'undefined') return
+    redraw()
+    window.removeEventListener('resize', redraw)
   })
 </script>
 
 <div class="relative h-full w-full">
-  <button class="flex h-10 w-10 items-center justify-center rounded-full bg-red-300">
-    <div>A</div>
-  </button>
+  <GraphVertice data={{ moveArea: graphSvgElementBounds }} />
   <svg bind:this={graphSvgElement} class="absolute left-0 top-0 -z-10 h-full w-full">
     {#each xLinePositions as linePosition}
       <line
