@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { clamp } from '$lib/utils/math'
+
   export let data: {
     moveArea: {
       start: {
@@ -16,15 +18,28 @@
   let isAttached = false
 
   function onVerticeClick(event: MouseEvent) {
+    event.stopPropagation()
     if (!vertice || typeof window === 'undefined') return
 
     if (isAttached) {
-      window.removeEventListener('mousemove', moveVertice)
-      isAttached = false
+      detachVertice()
     } else {
-      window.addEventListener('mousemove', moveVertice)
-      isAttached = true
+      attachVertice()
     }
+  }
+
+  function attachVertice() {
+    if (!vertice || typeof window === 'undefined') return
+    window.addEventListener('mousemove', moveVertice)
+    window.addEventListener('click', detachVertice)
+    isAttached = true
+  }
+
+  function detachVertice() {
+    if (!vertice || typeof window === 'undefined') return
+    window.removeEventListener('mousemove', moveVertice)
+    window.removeEventListener('click', detachVertice)
+    isAttached = false
   }
 
   function moveVertice(event: MouseEvent) {
@@ -34,8 +49,8 @@
     let rect = vertice.getBoundingClientRect()
 
     let center = {
-      x: event.clientX - rect.width / 2,
-      y: event.clientY - rect.height / 2,
+      x: clamp(event.clientX - rect.width / 2, data.moveArea.start.x, data.moveArea.end.x - rect.width),
+      y: clamp(event.clientY - rect.height / 2, data.moveArea.start.y, data.moveArea.end.y - rect.height),
     }
 
     vertice.style.left = center.x + 'px'
