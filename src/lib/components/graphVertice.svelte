@@ -1,37 +1,25 @@
-<script lang="ts" context="module">
-  export type VertexEvent<T extends Event> = T & {
-    detail: {
-      element: EventTarget
-    }
-    id: string
-  }
-</script>
-
 <script lang="ts">
   import { clamp } from '$lib/utils/math'
   import { createEventDispatcher } from 'svelte'
+  import type { Coordinate } from './graph.svelte'
 
   const dispatch = createEventDispatcher()
 
-  export let vertex: {
-    id: string
-    x: number
-    y: number
-  }
-
   export let data: {
     moveArea: {
-      start: { x: number; y: number }
-      end: { x: number; y: number }
+      start: Coordinate
+      end: Coordinate
     }
   }
 
+  export let vertice: HTMLButtonElement | null = null
+
   let openOptions = false
   let optionsOffset = 0
-  let vertice: HTMLButtonElement | null = null
   let isAttached = false
 
   function onVerticeLeftClick(event: MouseEvent) {
+    console.log('Vertice clicked')
     event.stopPropagation()
     if (!vertice) return
 
@@ -57,10 +45,10 @@
     isAttached = true
   }
 
-  function detachVertice() {
+  function detachVertice(event?: MouseEvent, flag = true) {
     window.removeEventListener('mousemove', moveVertice)
     window.removeEventListener('mouseup', detachVertice)
-    isAttached = false
+    if (flag) isAttached = false
   }
 
   function moveVertice(event: MouseEvent) {
@@ -76,19 +64,18 @@
     vertice.style.left = `${center.x}px`
     vertice.style.top = `${center.y}px`
 
-    // Update the vertex data and notify parent components
-    vertex.x = center.x
-    vertex.y = center.y
-    dispatch('update', { id: vertex.id, x: center.x, y: center.y })
+    dispatch('update', event)
   }
 
   function onDragStart(event: MouseEvent) {
-    event.preventDefault() // Optional based on use-case
-    dispatch('dragStart', { id: vertex.id, element: vertice })
+    event.preventDefault()
+    detachVertice(event, false)
+    dispatch('dragStart', event)
   }
 
   function onDragEnd(event: MouseEvent) {
-    dispatch('dragEnd', { id: vertex.id, element: vertice })
+    event.preventDefault()
+    dispatch('dragEnd', event)
   }
 </script>
 
