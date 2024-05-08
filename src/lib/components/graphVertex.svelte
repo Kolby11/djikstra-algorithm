@@ -12,21 +12,22 @@
     }
   }
 
+  export let id: string
+
   export let vertice: HTMLButtonElement | null = null
 
   let openOptions = false
   let optionsOffset = 0
   let isAttached = false
 
-  function onVerticeLeftClick(event: MouseEvent) {
-    console.log('Vertice clicked')
+  function onVertexLeftClick(event: MouseEvent) {
     event.stopPropagation()
     if (!vertice) return
 
     if (isAttached) {
-      detachVertice()
+      detachVertex()
     } else {
-      attachVertice()
+      attachVertex()
     }
   }
 
@@ -39,19 +40,19 @@
     openOptions = !openOptions
   }
 
-  function attachVertice() {
-    window.addEventListener('mousemove', moveVertice)
-    window.addEventListener('mouseup', detachVertice)
+  function attachVertex() {
+    window.addEventListener('mousemove', moveVertex)
+    window.addEventListener('mouseup', detachVertex)
     isAttached = true
   }
 
-  function detachVertice(event?: MouseEvent, flag = true) {
-    window.removeEventListener('mousemove', moveVertice)
-    window.removeEventListener('mouseup', detachVertice)
+  function detachVertex(event?: MouseEvent, flag = true) {
+    window.removeEventListener('mousemove', moveVertex)
+    window.removeEventListener('mouseup', detachVertex)
     if (flag) isAttached = false
   }
 
-  function moveVertice(event: MouseEvent) {
+  function moveVertex(event: MouseEvent) {
     if (!vertice) return
     vertice.style.position = 'fixed'
 
@@ -69,7 +70,7 @@
 
   function onDragStart(event: MouseEvent) {
     event.preventDefault()
-    detachVertice(event, false)
+    detachVertex(event, false)
     dispatch('dragStart', event)
   }
 
@@ -77,19 +78,27 @@
     event.preventDefault()
     dispatch('dragEnd', event)
   }
+
+  function deleteVertex() {
+    dispatch('delete')
+    vertice?.parentNode?.removeChild(vertice)
+  }
 </script>
 
 <button
   bind:this={vertice}
   draggable="true"
-  on:click={onVerticeLeftClick}
+  on:click={onVertexLeftClick}
   on:contextmenu={onVerticeRightClick}
   on:mousedown={onDragStart}
   on:mouseup={onDragEnd}
   class="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-red-300"
 >
-  <div>A</div>
+  <div>{id}</div>
   {#if openOptions}
-    <div class="absolute z-20 rounded bg-white px-4 py-2 shadow-md" style={`top: ${optionsOffset}px`}>Options</div>
+    <div class="absolute z-20 rounded bg-white px-4 py-2 shadow-md" style={`top: ${optionsOffset}px`}>
+      Options
+      <button on:click={deleteVertex}>Delete</button>
+    </div>
   {/if}
 </button>

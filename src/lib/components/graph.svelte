@@ -17,9 +17,9 @@
 
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
-  import GraphVertice from './graphVertice.svelte'
   import GraphDragLine from './graphDragLine.svelte'
   import GraphEdge from './graphEdge.svelte'
+  import GraphVertex from './graphVertex.svelte'
 
   // Set default values for the gaps
   export let xGap = 50 // fixed gap in pixels between vertical lines
@@ -157,6 +157,16 @@
     recalculateEdgesCoordinates(vertexId)
   }
 
+  function handleVertexDelete(vertexId: string) {
+    delete vertices.vertexId
+
+    console.log(edges)
+    const a = edges.filter(edge => {
+      !Object.values(edge).includes(vertexId)
+    })
+    console.log(a)
+  }
+
   onMount(() => {
     if (typeof window === 'undefined') return
     redraw()
@@ -174,12 +184,14 @@
   <div>Options</div>
   <div class="relative h-full w-full">
     {#each Object.keys(vertices) as vertexId}
-      <GraphVertice
+      <GraphVertex
         bind:vertice={vertices[vertexId]}
+        id={vertexId}
         data={{ moveArea: graphSvgElementBounds }}
         on:dragStart={() => verticeDragStart(vertexId)}
         on:dragEnd={() => verticeDragEnd(vertexId)}
         on:update={() => handleVertexUpdate(vertexId)}
+        on:delete={() => handleVertexDelete(vertexId)}
       />
     {/each}
     <svg bind:this={graphSvgElement} class="absolute left-0 top-0 -z-10 h-full w-full opacity-30">
