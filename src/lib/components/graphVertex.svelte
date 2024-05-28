@@ -2,6 +2,7 @@
   import { clamp } from '$lib/utils/math'
   import { createEventDispatcher } from 'svelte'
   import type { Coordinate } from './graph.svelte'
+  import ColorPicker from './colorPicker.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -14,7 +15,7 @@
 
   export let id: string
 
-  export let vertice: HTMLButtonElement | null = null
+  export let vertice: HTMLDivElement | null = null
 
   let openOptions = false
   let optionsOffset = 0
@@ -85,20 +86,22 @@
   }
 </script>
 
-<button
-  bind:this={vertice}
-  draggable="true"
-  on:click={onVertexLeftClick}
-  on:contextmenu={onVerticeRightClick}
-  on:mousedown={onDragStart}
-  on:mouseup={onDragEnd}
-  class="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-red-300"
->
-  <div>{id}</div>
+<div bind:this={vertice} class="relative z-10 flex items-center justify-center">
+  <button
+    draggable="true"
+    on:mousedown={onDragStart}
+    on:mouseup={onDragEnd}
+    on:click={onVertexLeftClick}
+    on:contextmenu={onVerticeRightClick}
+    class="h-10 w-10 rounded-full bg-red-300"
+  >
+    {id}
+  </button>
   {#if openOptions}
     <div class="absolute z-20 rounded bg-white px-4 py-2 shadow-md" style={`top: ${optionsOffset}px`}>
       Options
       <button on:click={deleteVertex}>Delete</button>
+      <ColorPicker />
     </div>
   {/if}
-</button>
+</div>

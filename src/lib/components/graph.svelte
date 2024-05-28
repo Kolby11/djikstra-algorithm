@@ -25,7 +25,7 @@
   export let xGap = 50 // fixed gap in pixels between vertical lines
   export let yGap = 50 // fixed gap in pixels between horizontal lines
 
-  const vertices: Record<string, HTMLButtonElement | undefined> = { A: undefined, B: undefined, C: undefined }
+  const vertices: Record<string, HTMLDivElement | undefined> = { A: undefined, B: undefined, C: undefined }
 
   const edges: Edge[] = []
   const edgesCoordinates: Record<string, LinePosition> = {}
@@ -50,7 +50,7 @@
   let dragStartVertex:
     | {
         id: string
-        element: HTMLButtonElement
+        element: HTMLDivElement
       }
     | undefined = undefined
 

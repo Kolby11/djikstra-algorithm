@@ -8,7 +8,7 @@
     }
   }
 
-  export let dragVerticeStart: HTMLButtonElement | undefined = undefined
+  export let dragVerticeStart: HTMLDivElement | undefined = undefined
 
   let isDragging = false
 
