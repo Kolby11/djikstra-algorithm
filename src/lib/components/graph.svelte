@@ -19,13 +19,17 @@
   import { onDestroy, onMount } from 'svelte'
   import GraphDragLine from './graphDragLine.svelte'
   import GraphEdge from './graphEdge.svelte'
-  import GraphVertex from './graphVertex.svelte'
+  import GraphVertex, { type Vertex } from './graphVertex.svelte'
 
   // Set default values for the gaps
   export let xGap = 50 // fixed gap in pixels between vertical lines
   export let yGap = 50 // fixed gap in pixels between horizontal lines
 
-  const vertices: Record<string, HTMLDivElement | undefined> = { A: undefined, B: undefined, C: undefined }
+  const vertices: Record<string, Vertex> = {
+    A: { id: 'A', name: 'A' },
+    B: { id: 'B', name: 'B' },
+    C: { id: 'C', name: 'C' },
+  }
 
   const edges: Edge[] = []
   const edgesCoordinates: Record<string, LinePosition> = {}
@@ -47,12 +51,7 @@
 
   let dragLine: GraphDragLine | undefined = undefined
 
-  let dragStartVertex:
-    | {
-        id: string
-        element: HTMLDivElement
-      }
-    | undefined = undefined
+  let dragStartVertex: Vertex | undefined = undefined
 
   function redraw() {
     calculateSvgElement()
@@ -114,10 +113,10 @@
       if (vertexId && edge.start !== vertexId && edge.end !== vertexId) return
       const startVertex = vertices[edge.start]
       const endVertex = vertices[edge.end]
-      if (!startVertex || !endVertex) return
+      if (!startVertex.elementRef || !endVertex.elementRef) return
 
-      const startRect = startVertex.getBoundingClientRect()
-      const endRect = endVertex.getBoundingClientRect()
+      const startRect = startVertex.elementRef.getBoundingClientRect()
+      const endRect = endVertex.elementRef.getBoundingClientRect()
 
       edgesCoordinates[edge.start + edge.end] = {
         start: {
@@ -135,7 +134,7 @@
   function verticeDragStart(vertexId: string) {
     const vertex = vertices[vertexId]
     if (vertex) {
-      dragStartVertex = { id: vertexId, element: vertex }
+      dragStartVertex = vertex
       dragLine?.startDrag()
     }
   }
@@ -185,8 +184,8 @@
   <div class="relative h-full w-full">
     {#each Object.keys(vertices) as vertexId}
       <GraphVertex
-        bind:vertice={vertices[vertexId]}
-        id={vertexId}
+        bind:vertice={vertices[vertexId].elementRef}
+        bind:vertex={vertices[vertexId]}
         data={{ moveArea: graphSvgElementBounds }}
         on:dragStart={() => verticeDragStart(vertexId)}
         on:dragEnd={() => verticeDragEnd(vertexId)}
@@ -224,7 +223,7 @@
       <GraphDragLine
         bind:this={dragLine}
         data={{ moveArea: graphSvgElementBounds }}
-        dragVerticeStart={dragStartVertex?.element}
+        dragVerticeStart={dragStartVertex?.elementRef}
       />
     </svg>
   </div>

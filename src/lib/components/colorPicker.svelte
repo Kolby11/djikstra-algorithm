@@ -76,7 +76,7 @@
 </script>
 
 <div class="flex">
-  <div class="relative h-64 w-64 border border-gray-300" on:click={pickColor}>
+  <div class="relative size-32 border border-gray-300" on:click={pickColor}>
     <div class="absolute z-10 h-full w-full bg-gradient-to-tr from-white to-transparent"></div>
     <div class="absolute z-10 h-full w-full bg-gradient-to-t from-black to-transparent opacity-50"></div>
     <div class="absolute z-20 h-full w-full mix-blend-multiply" style="background: hsl({hue}, 100%, 50%);"></div>

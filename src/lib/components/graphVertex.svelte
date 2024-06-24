@@ -1,8 +1,16 @@
+<script lang="ts" context="module">
+  export type Vertex = {
+    id: string
+    name: string
+    elementRef?: HTMLDivElement
+  }
+</script>
+
 <script lang="ts">
   import { clamp } from '$lib/utils/math'
   import { createEventDispatcher } from 'svelte'
   import type { Coordinate } from './graph.svelte'
-  import ColorPicker from './colorPicker.svelte'
+  import GraphVertexOptions from './graphVertexOptions.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -13,17 +21,16 @@
     }
   }
 
-  export let id: string
-
+  export let vertex: Vertex
   export let vertice: HTMLDivElement | null = null
 
-  let openOptions = false
-  let optionsOffset = 0
-  let isAttached = false
+  let openOptions: boolean = false
+  let optionsOffset: number = 0
+  let isAttached: boolean = false
 
   function onVertexLeftClick(event: MouseEvent) {
     event.stopPropagation()
-    if (!vertice) return
+    if (!vertex.elementRef) return
 
     if (isAttached) {
       detachVertex()
@@ -34,9 +41,9 @@
 
   function onVerticeRightClick(event: MouseEvent) {
     event.preventDefault()
-    if (!vertice) return
+    if (!vertex.elementRef) return
 
-    const rect = vertice.getBoundingClientRect()
+    const rect = vertex.elementRef.getBoundingClientRect()
     optionsOffset = rect.height // Calculate offset for options menu
     openOptions = !openOptions
   }
@@ -54,17 +61,17 @@
   }
 
   function moveVertex(event: MouseEvent) {
-    if (!vertice) return
-    vertice.style.position = 'fixed'
+    if (!vertex.elementRef) return
+    vertex.elementRef.style.position = 'fixed'
 
-    let rect = vertice.getBoundingClientRect()
+    let rect = vertex.elementRef.getBoundingClientRect()
     let center = {
       x: clamp(event.clientX - rect.width / 2, data.moveArea.start.x, data.moveArea.end.x - rect.width),
       y: clamp(event.clientY - rect.height / 2, data.moveArea.start.y, data.moveArea.end.y - rect.height),
     }
 
-    vertice.style.left = `${center.x}px`
-    vertice.style.top = `${center.y}px`
+    vertex.elementRef.style.left = `${center.x}px`
+    vertex.elementRef.style.top = `${center.y}px`
 
     dispatch('update', event)
   }
@@ -82,7 +89,7 @@
 
   function deleteVertex() {
     dispatch('delete')
-    vertice?.parentNode?.removeChild(vertice)
+    vertex.elementRef?.parentNode?.removeChild(vertex.elementRef)
   }
 </script>
 
@@ -93,15 +100,9 @@
     on:mouseup={onDragEnd}
     on:click={onVertexLeftClick}
     on:contextmenu={onVerticeRightClick}
-    class="h-10 w-10 rounded-full bg-red-300"
+    class="h-10 w-10 rounded-full bg-green-400"
   >
-    {id}
+    {vertex.name}
   </button>
-  {#if openOptions}
-    <div class="absolute z-20 rounded bg-white px-4 py-2 shadow-md" style={`top: ${optionsOffset}px`}>
-      Options
-      <button on:click={deleteVertex}>Delete</button>
-      <ColorPicker />
-    </div>
-  {/if}
+  <GraphVertexOptions bind:vertex offset={optionsOffset} bind:isOpen={openOptions} deleteVertexFn={deleteVertex} />
 </div>
