@@ -73,32 +73,63 @@
     const [r, g, b] = hslToRgb(hue, saturation, lightness)
     updateColor(r, g, b)
   }
+
+  const dragStart = (event: MouseEvent) => {
+    event.preventDefault()
+    window.addEventListener('mousemove', pickColor)
+    window.addEventListener('mouseup', dragEnd)
+  }
+  const dragEnd = (event: MouseEvent) => {
+    window.removeEventListener('mousemove', pickColor)
+    window.removeEventListener('mouseup', dragEnd)
+  }
 </script>
 
 <div class="flex">
-  <div class="relative size-32 border border-gray-300" on:click={pickColor}>
+  <div class="relative size-32 border border-gray-300" on:click={pickColor} on:mousedown={dragStart}>
     <div class="absolute z-10 h-full w-full bg-gradient-to-tr from-white to-transparent"></div>
     <div class="absolute z-10 h-full w-full bg-gradient-to-t from-black to-transparent opacity-50"></div>
     <div class="absolute z-20 h-full w-full mix-blend-multiply" style="background: hsl({hue}, 100%, 50%);"></div>
   </div>
-  <div class="ml-4 flex flex-col">
-    <label class="mb-2 block">Hue: {hue}</label>
-    <input type="range" min="0" max="360" bind:value={hue} on:input={updateHue} class="mb-4 w-full" />
-    <!-- <div class="mt-4">
-      <label class="mb-2 block">Red: {red}</label>
-      <input type="range" min="0" max="255" bind:value={red} on:input={convertToHexadecimal} class="w-full" />
+  <div>
+    <label for="hue">Hue: {hue}</label>
+    <input name="hue" type="range" min="0" max="360" bind:value={hue} on:input={updateHue} />
+    <div>
+      <label for="red">Red: {red}</label>
+      <input
+        name="red"
+        type="range"
+        min="0"
+        max="255"
+        bind:value={red}
+        on:input={convertToHexadecimal}
+        class="w-full"
+      />
     </div>
-    <div class="mt-4">
-      <label class="mb-2 block">Green: {green}</label>
-      <input type="range" min="0" max="255" bind:value={green} on:input={convertToHexadecimal} class="w-full" />
+    <div>
+      <label for="green">Green: {green}</label>
+      <input
+        name="green"
+        type="range"
+        min="0"
+        max="255"
+        bind:value={green}
+        on:input={convertToHexadecimal}
+        class="w-full"
+      />
     </div>
-    <div class="mt-4">
-      <label class="mb-2 block">Blue: {blue}</label>
-      <input type="range" min="0" max="255" bind:value={blue} on:input={convertToHexadecimal} class="w-full" />
-    </div> -->
-    <div class="h-8 w-8 bg-[rgb({red}, {green}, {blue})]"></div>
+    <div>
+      <label for="blue">Blue: {blue}</label>
+      <input
+        name="blue"
+        type="range"
+        min="0"
+        max="255"
+        bind:value={blue}
+        on:input={convertToHexadecimal}
+        class="w-full"
+      />
+    </div>
+    <div class="size-8" style={`background-color: rgb(${red}, ${green}, ${blue});`}></div>
   </div>
 </div>
-
-<style>
-</style>

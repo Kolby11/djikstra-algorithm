@@ -17,7 +17,7 @@
   style={`top: ${offset}px`}
 >
   <h1 class="text-center text-xl">Options - {vertex.name}</h1>
-  <ColorPicker />
+  <ColorPicker bind:color={vertex.style.backgroundColor} />
   <input type="text" on:input={e => (vertex.name = e.currentTarget.value)} value={vertex.name} />
   <div class="flex items-center justify-between">
     <button on:click={deleteVertexFn}>Delete</button>

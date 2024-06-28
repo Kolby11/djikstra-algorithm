@@ -3,6 +3,9 @@
     id: string
     name: string
     elementRef?: HTMLDivElement
+    style: {
+      backgroundColor: string
+    }
   }
 </script>
 
@@ -100,7 +103,8 @@
     on:mouseup={onDragEnd}
     on:click={onVertexLeftClick}
     on:contextmenu={onVerticeRightClick}
-    class="h-10 w-10 rounded-full bg-green-400"
+    class="h-10 w-10 rounded-full"
+    style={`background-color: ${vertex.style.backgroundColor || '#000000'};`}
   >
     {vertex.name}
   </button>

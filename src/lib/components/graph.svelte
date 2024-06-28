@@ -26,9 +26,9 @@
   export let yGap = 50 // fixed gap in pixels between horizontal lines
 
   const vertices: Record<string, Vertex> = {
-    A: { id: 'A', name: 'A' },
-    B: { id: 'B', name: 'B' },
-    C: { id: 'C', name: 'C' },
+    A: { id: 'A', name: 'A', style: { backgroundColor: '#bbff55' } },
+    B: { id: 'B', name: 'B', style: { backgroundColor: '#bbff55' } },
+    C: { id: 'C', name: 'C', style: { backgroundColor: '#bbff55' } },
   }
 
   const edges: Edge[] = []
