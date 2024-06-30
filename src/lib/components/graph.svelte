@@ -1,7 +1,14 @@
 <script lang="ts" context="module">
   export type Edge = {
-    start: string
-    end: string
+    id: string
+    start: Vertex
+    end: Vertex
+    position: LinePosition
+    oriented?: boolean
+    value?: number
+    style: {
+      color: string
+    }
   }
 
   export type Coordinate = {
@@ -16,215 +23,86 @@
 </script>
 
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
   import GraphDragLine from './graphDragLine.svelte'
+
   import GraphEdge from './graphEdge.svelte'
-  import GraphVertex, { type Vertex } from './graphVertex.svelte'
+
+  import type { Vertex } from './graphVertex.svelte'
+  import GraphVertex from './graphVertex.svelte'
+
+  import Plane from './plane.svelte'
 
   // Set default values for the gaps
-  export let xGap = 50 // fixed gap in pixels between vertical lines
-  export let yGap = 50 // fixed gap in pixels between horizontal lines
+  export let xGap = 25 // fixed gap in pixels between vertical lines
+  export let yGap = 25 // fixed gap in pixels between horizontal lines
+  let graphScale: number = 0
 
-  const vertices: Record<string, Vertex> = {
-    A: { id: 'A', name: 'A', style: { backgroundColor: '#bbff55' } },
-    B: { id: 'B', name: 'B', style: { backgroundColor: '#bbff55' } },
-    C: { id: 'C', name: 'C', style: { backgroundColor: '#bbff55' } },
-  }
-
-  const edges: Edge[] = []
-  const edgesCoordinates: Record<string, LinePosition> = {}
-
-  let graphSvgElement: SVGElement | undefined = undefined
-  let graphSvgElementBounds: {
-    start: {
-      x: number
-      y: number
-    }
-    end: {
-      x: number
-      y: number
-    }
-  }
-
-  let xLinePositions: LinePosition[] = []
-  let yLinePositions: LinePosition[] = []
+  export let graphCenterPosition: Coordinate = { x: 0, y: 0 }
 
   let dragLine: GraphDragLine | undefined = undefined
 
-  let dragStartVertex: Vertex | undefined = undefined
-
-  function redraw() {
-    calculateSvgElement()
-    drawGraphLines()
-    recalculateEdgesCoordinates()
+  const vertices: Record<string, Vertex> = {
+    A: { id: 'A', name: 'A', coordinates: { x: 0, y: 0 }, style: { backgroundColor: '#bbff55' } },
+    B: { id: 'B', name: 'B', coordinates: { x: 0, y: 0 }, style: { backgroundColor: '#bbff55' } },
+    C: { id: 'C', name: 'C', coordinates: { x: 0, y: 0 }, style: { backgroundColor: '#bbff55' } },
   }
 
-  function calculateSvgElement() {
-    if (!graphSvgElement) return
-    const rect = graphSvgElement.getBoundingClientRect()
-    graphSvgElementBounds = {
-      start: {
-        x: rect.x,
-        y: rect.y,
-      },
-      end: {
-        x: rect.x + rect.width,
-        y: rect.y + rect.height,
-      },
+  const edges: Record<string, Edge> = {
+    '2': {
+      id: '2',
+      start: vertices.A,
+      end: vertices.B,
+      position: { start: { x: 0, y: 0 }, end: { x: 0, y: 0 } },
+      oriented: true,
+      style: { color: 'ff00ff' },
+    },
+  }
+
+  let graphSvgElementBounds: { start: Coordinate; end: Coordinate }
+
+  const createEdge = (startVertex: Vertex, endVertex: Vertex) => {
+    console.log(startVertex, endVertex)
+    const edgeId = startVertex.id + endVertex.id
+    edges[edgeId] = {
+      id: edgeId,
+      start: startVertex,
+      end: endVertex,
+      position: { start: startVertex.coordinates, end: endVertex.coordinates },
+      style: { color: 'ff00ff' },
     }
   }
-
-  function drawGraphLines() {
-    if (!graphSvgElement) return
-    const rect = graphSvgElement.getBoundingClientRect()
-    if (rect.width === 0 || rect.height === 0) {
-      console.error('SVG has no dimensions')
-      return
-    }
-
-    // Calculate the number of lines based on the fixed gaps
-    const xLineCount = Math.floor(rect.width / xGap)
-    const yLineCount = Math.floor(rect.height / yGap)
-
-    xLinePositions = []
-    yLinePositions = []
-
-    // Generate positions for vertical lines
-    for (let i = 0; i <= xLineCount; i++) {
-      let xPosition = i * xGap
-      xLinePositions.push({
-        start: { x: xPosition, y: 0 },
-        end: { x: xPosition, y: rect.height },
-      })
-    }
-
-    // Generate positions for horizontal lines
-    for (let i = 0; i <= yLineCount; i++) {
-      let yPosition = i * yGap
-      yLinePositions.push({
-        start: { x: 0, y: yPosition },
-        end: { x: rect.width, y: yPosition },
-      })
-    }
-  }
-
-  function recalculateEdgesCoordinates(vertexId?: string) {
-    edges.forEach(edge => {
-      if (vertexId && edge.start !== vertexId && edge.end !== vertexId) return
-      const startVertex = vertices[edge.start]
-      const endVertex = vertices[edge.end]
-      if (!startVertex.elementRef || !endVertex.elementRef) return
-
-      const startRect = startVertex.elementRef.getBoundingClientRect()
-      const endRect = endVertex.elementRef.getBoundingClientRect()
-
-      edgesCoordinates[edge.start + edge.end] = {
-        start: {
-          x: startRect.x - graphSvgElementBounds.start.x + startRect.width / 2,
-          y: startRect.y - graphSvgElementBounds.start.y + startRect.height / 2,
-        },
-        end: {
-          x: endRect.x - graphSvgElementBounds.start.x + endRect.width / 2,
-          y: endRect.y - graphSvgElementBounds.start.y + endRect.height / 2,
-        },
-      }
-    })
-  }
-
-  function verticeDragStart(vertexId: string) {
-    const vertex = vertices[vertexId]
-    if (vertex) {
-      dragStartVertex = vertex
-      dragLine?.startDrag()
-    }
-  }
-
-  function verticeDragEnd(vertexId: string) {
-    if (dragStartVertex && dragStartVertex.id !== vertexId) {
-      edges.push({
-        start: dragStartVertex.id,
-        end: vertexId,
-      })
-      recalculateEdgesCoordinates()
-    }
-
-    dragStartVertex = undefined
-    dragLine?.endDrag()
-  }
-
-  function handleVertexUpdate(vertexId: string) {
-    recalculateEdgesCoordinates(vertexId)
-  }
-
-  function handleVertexDelete(vertexId: string) {
-    delete vertices.vertexId
-
-    console.log(edges)
-    const a = edges.filter(edge => {
-      !Object.values(edge).includes(vertexId)
-    })
-    console.log(a)
-  }
-
-  onMount(() => {
-    if (typeof window === 'undefined') return
-    redraw()
-    window.addEventListener('resize', redraw)
-  })
-
-  onDestroy(() => {
-    if (typeof window === 'undefined') return
-    redraw()
-    window.removeEventListener('resize', redraw)
-  })
 </script>
 
-<div class="relative h-full w-full">
-  <div>Options</div>
-  <div class="relative h-full w-full">
-    {#each Object.keys(vertices) as vertexId}
-      <GraphVertex
-        bind:vertice={vertices[vertexId].elementRef}
-        bind:vertex={vertices[vertexId]}
-        data={{ moveArea: graphSvgElementBounds }}
-        on:dragStart={() => verticeDragStart(vertexId)}
-        on:dragEnd={() => verticeDragEnd(vertexId)}
-        on:update={() => handleVertexUpdate(vertexId)}
-        on:delete={() => handleVertexDelete(vertexId)}
-      />
-    {/each}
-    <svg bind:this={graphSvgElement} class="absolute left-0 top-0 -z-10 h-full w-full opacity-30">
-      <!-- Grid -->
-      {#each xLinePositions as linePosition}
-        <line
-          x1={linePosition.start.x}
-          y1={linePosition.start.y}
-          x2={linePosition.end.x}
-          y2={linePosition.end.y}
-          stroke="black"
-          stroke-width="1"
+<div class="flex h-full flex-col">
+  <div class="flex">
+    Options
+    <input min={-10} max={10} step="1" bind:value={graphScale} type="range" />
+    {graphScale}
+  </div>
+  <div class="relative h-full w-full overflow-hidden rounded-3xl">
+    <div class="relative h-full w-full">
+      <!-- Verices -->
+      {#each Object.entries(vertices) as [vertexId, vertex]}
+        <GraphVertex
+          moveArea={graphSvgElementBounds}
+          bind:vertex
+          on:dragStart={() => {
+            vertex.elementRef && dragLine?.startDrag(vertex)
+          }}
+          on:dragEnd={() => {
+            vertex.elementRef && dragLine?.endDragOnVertex(vertex)
+          }}
         />
+        <!-- on:delete={() => handleVertexDelete(vertexId)} -->
       {/each}
-      {#each yLinePositions as linePosition}
-        <line
-          x1={linePosition.start.x}
-          y1={linePosition.start.y}
-          x2={linePosition.end.x}
-          y2={linePosition.end.y}
-          stroke="black"
-          stroke-width="1"
-        />
-      {/each}
+    </div>
+    <Plane bind:graphCenterPosition bind:scale={graphScale} {xGap} {yGap} bind:graphSvgElementBounds>
       <!-- Edges -->
-      {#each Object.values(edgesCoordinates) as edgeCoordinates}
-        <GraphEdge data={{ moveArea: graphSvgElementBounds, position: edgeCoordinates }} />
+      {#each Object.values(edges) as edge}
+        <GraphEdge moveArea={graphSvgElementBounds} bind:edge />
       {/each}
       <!-- Drag line -->
-      <GraphDragLine
-        bind:this={dragLine}
-        data={{ moveArea: graphSvgElementBounds }}
-        dragVerticeStart={dragStartVertex?.elementRef}
-      />
-    </svg>
+      <GraphDragLine bind:this={dragLine} {createEdge} moveArea={graphSvgElementBounds} />
+    </Plane>
   </div>
 </div>

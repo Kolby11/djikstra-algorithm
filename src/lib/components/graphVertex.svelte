@@ -2,6 +2,8 @@
   export type Vertex = {
     id: string
     name: string
+    value?: number
+    coordinates: Coordinate
     elementRef?: HTMLDivElement
     style: {
       backgroundColor: string
@@ -17,15 +19,12 @@
 
   const dispatch = createEventDispatcher()
 
-  export let data: {
-    moveArea: {
-      start: Coordinate
-      end: Coordinate
-    }
+  export let moveArea: {
+    start: Coordinate
+    end: Coordinate
   }
 
   export let vertex: Vertex
-  export let vertice: HTMLDivElement | null = null
 
   let openOptions: boolean = false
   let optionsOffset: number = 0
@@ -69,20 +68,18 @@
 
     let rect = vertex.elementRef.getBoundingClientRect()
     let center = {
-      x: clamp(event.clientX - rect.width / 2, data.moveArea.start.x, data.moveArea.end.x - rect.width),
-      y: clamp(event.clientY - rect.height / 2, data.moveArea.start.y, data.moveArea.end.y - rect.height),
+      x: clamp(event.clientX - rect.width / 2, moveArea.start.x, moveArea.end.x - rect.width),
+      y: clamp(event.clientY - rect.height / 2, moveArea.start.y, moveArea.end.y - rect.height),
     }
 
     vertex.elementRef.style.left = `${center.x}px`
     vertex.elementRef.style.top = `${center.y}px`
-
-    dispatch('update', event)
   }
 
   function onDragStart(event: MouseEvent) {
     event.preventDefault()
     detachVertex(event, false)
-    dispatch('dragStart', event)
+    dispatch('dragStart', { ...event, vertex })
   }
 
   function onDragEnd(event: MouseEvent) {
@@ -96,7 +93,7 @@
   }
 </script>
 
-<div bind:this={vertice} class="relative z-10 flex items-center justify-center">
+<div bind:this={vertex.elementRef} class="relative z-10 flex items-center justify-center">
   <button
     draggable="true"
     on:mousedown={onDragStart}
