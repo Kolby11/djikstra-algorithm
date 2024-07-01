@@ -17,7 +17,7 @@
   export let graphCenterPosition: Coordinate // Value on which is the initial graph focused
   export let scale: number
 
-  const scalingSteps = [0.01, 0.1, 1, 10, 100]
+  const scalingSteps = [100, 10, 1, 0.1, 0.01]
   $: currentScale = Math.floor(scale / scaleStepUp)
   const scaleStepUp = 3
 
@@ -104,30 +104,36 @@
     horizontalGridLines = []
     verticalGridLines = []
 
-    // Calculate the value of the most top left point that fits the grid
+    // Calculate the value of the most top-left point that fits the grid
     const leftTopXValue: number = Math.floor(leftTopPoint.x / calculatedXGap) * calculatedXGap
     const leftTopYValue: number = Math.floor(leftTopPoint.y / calculatedYGap) * calculatedYGap
 
+    // Calculate the total width and height of the SVG element
+    const svgWidth = graphSvgElementBounds.end.x - graphSvgElementBounds.start.x
+    const svgHeight = graphSvgElementBounds.end.y - graphSvgElementBounds.start.y
+
+    // Calculate the number of vertical and horizontal grid lines
+    const verticalLineCount = Math.ceil(svgWidth / calculatedXGap)
+    const horizontalLineCount = Math.ceil(svgHeight / calculatedYGap)
+
     // Add vertical grid lines
-    for (let x = leftTopXValue; x <= leftTopPoint.x + graphSvgElementBounds.end.x; x += calculatedXGap) {
+    for (let i = 0; i <= verticalLineCount; i++) {
+      const xPosition = leftTopXValue + i * calculatedXGap - leftTopPoint.x
       const line: GridLine = {
-        value: x / calculatedXGap,
-        start: { x: x - leftTopPoint.x, y: 0 },
-        end: { x: x - leftTopPoint.x, y: graphSvgElementBounds.end.y - graphSvgElementBounds.start.y },
+        value: i - Math.floor(verticalLineCount / 2),
+        start: { x: xPosition, y: 0 },
+        end: { x: xPosition, y: svgHeight },
       }
       verticalGridLines.push(line)
     }
 
     // Add horizontal grid lines
-    for (
-      let y = leftTopYValue;
-      y <= leftTopPoint.y + (graphSvgElementBounds.end.y - graphSvgElementBounds.start.y);
-      y += calculatedYGap
-    ) {
+    for (let i = 0; i <= horizontalLineCount; i++) {
+      const yPosition = leftTopYValue + i * calculatedYGap - leftTopPoint.y
       const line: GridLine = {
-        value: y / calculatedYGap,
-        start: { x: graphSvgElementBounds.start.x, y: y - leftTopPoint.y },
-        end: { x: graphSvgElementBounds.end.x, y: y - leftTopPoint.y },
+        value: i - Math.floor(horizontalLineCount / 2),
+        start: { x: 0, y: yPosition },
+        end: { x: svgWidth, y: yPosition },
       }
       horizontalGridLines.push(line)
     }
@@ -149,7 +155,7 @@
         value: line.value,
         position: {
           x: line.start.x,
-          y: graphCenterPosition.y,
+          y: center.y,
         },
       }
       horizontalAxis.push(axisValue)
@@ -159,7 +165,7 @@
       const axisValue: AxisValue = {
         value: line.value,
         position: {
-          x: graphCenterPosition.x,
+          x: center.x,
           y: line.start.y,
         },
       }
