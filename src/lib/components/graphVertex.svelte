@@ -4,7 +4,7 @@
     name: string
     value?: number
     coordinates: Coordinate
-    elementRef?: HTMLDivElement
+    elementRef?: HTMLButtonElement
     style: {
       backgroundColor: string
     }
@@ -93,17 +93,16 @@
   }
 </script>
 
-<div bind:this={vertex.elementRef} class="relative z-10 flex items-center justify-center">
-  <button
-    draggable="true"
-    on:mousedown={onDragStart}
-    on:mouseup={onDragEnd}
-    on:click={onVertexLeftClick}
-    on:contextmenu={onVerticeRightClick}
-    class="h-10 w-10 rounded-full"
-    style={`background-color: ${vertex.style.backgroundColor || '#000000'};`}
-  >
-    {vertex.name}
-  </button>
+<button
+  draggable="true"
+  bind:this={vertex.elementRef}
+  on:mousedown={onDragStart}
+  on:mouseup={onDragEnd}
+  on:click={onVertexLeftClick}
+  on:contextmenu={onVerticeRightClick}
+  class="relative z-10 flex size-10 items-center justify-center rounded-full"
+  style={`background-color: ${vertex.style.backgroundColor || '#000000'};`}
+>
+  {vertex.name}
   <GraphVertexOptions bind:vertex offset={optionsOffset} bind:isOpen={openOptions} deleteVertexFn={deleteVertex} />
-</div>
+</button>

@@ -30,7 +30,8 @@
   import type { Vertex } from './graphVertex.svelte'
   import GraphVertex from './graphVertex.svelte'
 
-  import Plane from './plane.svelte'
+  import Plane from './graphGrid.svelte'
+  import GraphGrid from './graphGrid.svelte'
 
   // Set default values for the gaps
   export let xGap = 25 // fixed gap in pixels between vertical lines
@@ -96,13 +97,13 @@
         <!-- on:delete={() => handleVertexDelete(vertexId)} -->
       {/each}
     </div>
-    <Plane bind:graphCenterPosition bind:scale={graphScale} {xGap} {yGap} bind:graphSvgElementBounds>
+    <GraphGrid bind:graphCenterPosition bind:scale={graphScale} {xGap} {yGap} bind:graphSvgElementBounds>
       <!-- Edges -->
       {#each Object.values(edges) as edge}
         <GraphEdge moveArea={graphSvgElementBounds} bind:edge />
       {/each}
       <!-- Drag line -->
       <GraphDragLine bind:this={dragLine} {createEdge} moveArea={graphSvgElementBounds} />
-    </Plane>
+    </GraphGrid>
   </div>
 </div>
